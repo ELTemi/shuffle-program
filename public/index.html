@@ -162,10 +162,10 @@
       }
 
       .pagination button:disabled {
-        color: #c7cfe0;
-        border-color: #e8ecf2;
-        background: #f7f9fc;
-        cursor: default;
+        color: #ebedf1;
+        background: #94989d;
+        border-color: #d5dae4;
+        cursor: not-allowed;
       }
 
       .page-label {
@@ -222,7 +222,7 @@
       </div>
 
       <div class="pagination">
-        <button id="firstBtn" title="First page" disabled>«</button>
+        <button id="firstBtn" title="First page" disabled >«</button>
         <button id="prevBtn" disabled>‹ Prev</button>
         <span class="page-label" id="pageLabel">—</span>
         <button id="nextBtn" disabled>Next ›</button>
@@ -270,7 +270,9 @@
         isLoading = loading;
         overlay.style.display = loading ? "flex" : "none";
         reshuffleBtn.disabled = loading;
-        [firstBtn, prevBtn, nextBtn, lastBtn].forEach(b => b.disabled = loading);
+         if (loading) {
+          [firstBtn, prevBtn, nextBtn, lastBtn].forEach(b => b.disabled = true);
+        }
       }
 
       function showError(msg) {
