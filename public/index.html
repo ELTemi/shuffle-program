@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fisher-Yates Shuffle</title>
+    <style>
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Segoe UI", system-ui, sans-serif;
+        background: #f4f6f9;
+        color: #1e2330;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem 1rem;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 1.5rem;
+      }
+
+      header h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      header p {
+        margin-top: 0.4rem;
+        font-size: 0.9rem;
+        color: #5a6377;
+      }
+
+      .card {
+        background: #ffffff;
+        border: 1px solid #e2e6ef;
+        border-radius: 10px;
+        width: 100%;
+        max-width: 860px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      /* ── stats bar ── */
+      .stats {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        font-size: 0.85rem;
+        margin-bottom: 1.25rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e2e6ef;
+        color: #5a6377;
+        min-height: 24px;
+      }
+
+      .stats span strong {
+        color: #1e2330;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 0.15rem 0.55rem;
+        border-radius: 99px;
+        font-size: 0.78rem;
+        font-weight: 600;
+      }
+
+      .badge.pass { background: #d1fae5; color: #065f46; }
+      .badge.fail { background: #fee2e2; color: #991b1b; }
+
+      /* ── number grid ── */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        gap: 6px;
+        min-height: 200px;
+        position: relative;
+      }
+
+      .cell {
+        background: #f0f3f9;
+        border-radius: 5px;
+        text-align: center;
+        padding: 0.45rem 0.2rem;
+        font-size: 0.8rem;
+        font-variant-numeric: tabular-nums;
+        transition: background 0.15s;
+      }
+
+      .cell:hover { background: #dce3f5; }
+
+      /* loading overlay */
+      .overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.85);
+        border-radius: 6px;
+        font-size: 0.9rem;
+        color: #5a6377;
+        gap: 0.5rem;
+      }
+
+      .spinner {
+        width: 18px;
+        height: 18px;
+        border: 2px solid #c7cfe0;
+        border-top-color: #3b5bdb;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+      }
+
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      /* error banner */
+      .error-banner {
+        padding: 0.6rem 1rem;
+        background: #fee2e2;
+        color: #991b1b;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+        display: none;
+      }
+
+      /* ── pagination controls ── */
+      .pagination {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e2e6ef;
+        flex-wrap: wrap;
+      }
+
+      .pagination button {
+        padding: 0.4rem 1rem;
+        border: 1px solid #c7cfe0;
+        border-radius: 6px;
+        background: #fff;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+      }
+
+      .pagination button:hover:not(:disabled) {
+        background: #f0f3f9;
+        border-color: #a0aec0;
+      }
+
+      .pagination button:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+
+      .page-label {
+        font-size: 0.85rem;
+        color: #5a6377;
+        min-width: 120px;
+        text-align: center;
+      }
+
+      /* ── reshuffle button ── */
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 1rem;
+      }
+
+      .btn-primary {
+        padding: 0.45rem 1.1rem;
+        background: #3b5bdb;
+        color: #fff;
+        border: none;
+        border-radius: 7px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.15s, opacity 0.15s;
+      }
+
+      .btn-primary:hover:not(:disabled) { background: #2f4abf; }
+      .btn-primary:disabled { opacity: 0.6; cursor: default; }
+    </style>
+  </head>
+  <body>
+
+    <header>
+      <h1>Fisher-Yates Shuffle</h1>
+      <p>Generates 10,000 unique numbers (1–10,000) in a uniformly random order via a REST API.</p>
+    </header>
+
+    <div class="card">
+      <div class="actions">
+        <button class="btn-primary" id="reshuffleBtn">↺ Reshuffle</button>
+      </div>
+
+      <div class="error-banner" id="errorBanner"></div>
+
+      <div class="stats" id="stats"></div>
+
+      <div class="grid" id="grid">
+        <div class="overlay" id="overlay">
+          <div class="spinner"></div>
+          Loading…
+        </div>
+      </div>
+
+      <div class="pagination">
+        <button id="firstBtn" title="First page" disabled>«</button>
+        <button id="prevBtn" disabled>‹ Prev</button>
+        <span class="page-label" id="pageLabel">—</span>
+        <button id="nextBtn" disabled>Next ›</button>
+        <button id="lastBtn" title="Last page" disabled>»</button>
+      </div>
+    </div>
+
+    <script>
+      "use strict";
+
+      // ── state ─────────────────────────────────────────────────────────────
+      let currentPage = 1;
+      let totalPages  = 1;
+      let isLoading   = false;
+
+      // ── DOM refs ──────────────────────────────────────────────────────────
+      const gridEl       = document.getElementById("grid");
+      const statsEl      = document.getElementById("stats");
+      const pageLabel    = document.getElementById("pageLabel");
+      const errorBanner  = document.getElementById("errorBanner");
+      const overlay      = document.getElementById("overlay");
+      const reshuffleBtn = document.getElementById("reshuffleBtn");
+      const firstBtn     = document.getElementById("firstBtn");
+      const prevBtn      = document.getElementById("prevBtn");
+      const nextBtn      = document.getElementById("nextBtn");
+      const lastBtn      = document.getElementById("lastBtn");
+
+      // ── API calls ─────────────────────────────────────────────────────────
+
+      async function postShuffle() {
+        const res = await fetch("/api/shuffle", { method: "POST" });
+        if (!res.ok) throw new Error(`Shuffle failed: ${res.status}`);
+        return res.json();
+      }
+
+      async function getNumbers(page, pageSize = 100) {
+        const res = await fetch(`/api/numbers?page=${page}&pageSize=${pageSize}`);
+        if (!res.ok) throw new Error(`Failed to fetch page ${page}: ${res.status}`);
+        return res.json();
+      }
+
+      // ── rendering ─────────────────────────────────────────────────────────
+
+      function setLoading(loading) {
+        isLoading = loading;
+        overlay.style.display = loading ? "flex" : "none";
+        reshuffleBtn.disabled = loading;
+        [firstBtn, prevBtn, nextBtn, lastBtn].forEach(b => b.disabled = loading);
+      }
+
+      function showError(msg) {
+        errorBanner.textContent = msg;
+        errorBanner.style.display = "block";
+      }
+
+      function clearError() {
+        errorBanner.style.display = "none";
+      }
+
+      function renderStats(meta) {
+        const verifiedClass = meta.verified ? "pass" : "fail";
+        const verifiedText  = meta.verified ? "PASS ✓" : "FAIL ✗";
+        const time = new Date(meta.shuffledAt).toLocaleTimeString();
+
+        statsEl.innerHTML = `
+          <span><strong>${meta.total.toLocaleString()}</strong> numbers</span>
+          <span>Range <strong>1–10,000</strong></span>
+          <span>Shuffled in <strong>${meta.elapsed} ms</strong></span>
+          <span>Shuffled at <strong>${time}</strong></span>
+          <span>Verification <span class="badge ${verifiedClass}">${verifiedText}</span></span>
+        `;
+      }
+
+      function renderGrid(numbers) {
+        const fragment = document.createDocumentFragment();
+        for (const n of numbers) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          cell.textContent = n;
+          fragment.appendChild(cell);
+        }
+        // remove old cells (keep overlay in place)
+        [...gridEl.querySelectorAll(".cell")].forEach(c => c.remove());
+        gridEl.appendChild(fragment);
+      }
+
+      function updateControls(page, pages) {
+        currentPage = page;
+        totalPages  = pages;
+
+        pageLabel.textContent = `Page ${page} of ${pages}`;
+        firstBtn.disabled = page === 1;
+        prevBtn.disabled  = page === 1;
+        nextBtn.disabled  = page === pages;
+        lastBtn.disabled  = page === pages;
+      }
+
+      // ── core flow ─────────────────────────────────────────────────────────
+
+      async function shuffle() {
+        setLoading(true);
+        clearError();
+        try {
+          const meta = await postShuffle();
+          renderStats(meta);
+          await loadPage(1);
+        } catch (err) {
+          showError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      async function loadPage(page) {
+        setLoading(true);
+        clearError();
+        try {
+          const data = await getNumbers(page);
+          renderGrid(data.numbers);
+          updateControls(data.page, data.totalPages);
+        } catch (err) {
+          showError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      // ── event listeners ───────────────────────────────────────────────────
+
+      reshuffleBtn.addEventListener("click", shuffle);
+
+      firstBtn.addEventListener("click", () => loadPage(1));
+      prevBtn.addEventListener("click",  () => loadPage(currentPage - 1));
+      nextBtn.addEventListener("click",  () => loadPage(currentPage + 1));
+      lastBtn.addEventListener("click",  () => loadPage(totalPages));
+
+      // ── init ──────────────────────────────────────────────────────────────
+      shuffle();
+    </script>
+  </body>
+</html>
