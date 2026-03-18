@@ -25,7 +25,7 @@ const MIME_TYPES = {
 // slices without re-running the algorithm on every request.
 let shuffleState = null;
 
-// ── response helpers ──────────────────────────────────────────────────────────
+// Response helpers
 
 function sendJSON(res, statusCode, payload) {
   const body = JSON.stringify(payload);
@@ -40,7 +40,7 @@ function sendError(res, statusCode, message) {
   sendJSON(res, statusCode, { error: message });
 }
 
-// ── static file handler ───────────────────────────────────────────────────────
+// Static file handler 
 
 function serveStatic(req, res) {
   const filePath = path.join(
@@ -62,7 +62,7 @@ function serveStatic(req, res) {
   });
 }
 
-// ── route handlers ────────────────────────────────────────────────────────────
+// Route handlers 
 
 /**
  * POST /api/shuffle
@@ -73,7 +73,7 @@ function serveStatic(req, res) {
  *
  * Response 200:
  *   { shuffledAt, elapsed, verified, total }
- */
+*/
 function handleShuffle(req, res) {
   shuffleState = runShuffle();
 
@@ -88,7 +88,7 @@ function handleShuffle(req, res) {
  * Requires a shuffle to have been run first via POST /api/shuffle.
  *
  * Query params:
- *   page     {number} - 1-based page number (default: 1)
+ *   page {number} - 1-based page number (default: 1)
  *   pageSize {number} - Results per page, 1–1000 (default: 100)
  *
  * Response 200:
@@ -96,7 +96,7 @@ function handleShuffle(req, res) {
  *
  * Response 404: No shuffle has been run yet.
  * Response 400: page out of range.
- */
+*/
 function handleGetNumbers(req, res) {
   if (!shuffleState) {
     return sendError(res, 404, "No shuffle has been run yet. POST /api/shuffle first.");
@@ -128,7 +128,7 @@ function handleGetNumbers(req, res) {
   });
 }
 
-// ── router ────────────────────────────────────────────────────────────────────
+// Router
 
 const server = http.createServer((req, res) => {
   const { pathname } = url.parse(req.url);
@@ -141,7 +141,7 @@ const server = http.createServer((req, res) => {
   sendError(res, 404, `Cannot ${req.method} ${pathname}`);
 });
 
-// ── start ─────────────────────────────────────────────────────────────────────
+// Start 
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
   console.log(`  POST http://localhost:${PORT}/api/shuffle   — run a shuffle`);

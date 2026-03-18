@@ -12,7 +12,7 @@ const {
   HI_BOUND,
 } = require("../shuffle");
 
-// ── generateNumbersToShuffle ──────────────────────────────────────────────────
+// Test generateNumbersToShuffle function
 
 describe("generateNumbersToShuffle", () => {
   it("returns an Int32Array", () => {
@@ -78,7 +78,7 @@ describe("generateNumbersToShuffle", () => {
   });
 });
 
-// ── shuffleInPlace ────────────────────────────────────────────────────────────
+// Test shuffleInPlace function
 
 describe("shuffleInPlace", () => {
   it("returns the same array reference (mutates in place)", () => {
@@ -119,7 +119,7 @@ describe("shuffleInPlace", () => {
   });
 });
 
-// ── verifyResult ──────────────────────────────────────────────────────────────
+// Test verifyResult function
 
 describe("verifyResult", () => {
   it("returns true for a correctly shuffled full range", () => {
@@ -161,7 +161,7 @@ describe("verifyResult", () => {
   });
 });
 
-// ── runShuffle ────────────────────────────────────────────────────────────────
+// Test runShuffle function
 
 describe("runShuffle", () => {
   it("returns an object with the expected keys", () => {

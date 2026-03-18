@@ -12,9 +12,9 @@
       }
 
       body {
-        font-family: "Segoe UI", system-ui, sans-serif;
-        background: #f4f6f9;
-        color: #1e2330;
+        font-family: "Inter", system-ui, sans-serif;
+        background: #f7f9fc;
+        color: #ba0f75;
         min-height: 100vh;
         display: flex;
         flex-direction: column;
@@ -162,7 +162,9 @@
       }
 
       .pagination button:disabled {
-        opacity: 0.4;
+        color: #c7cfe0;
+        border-color: #e8ecf2;
+        background: #f7f9fc;
         cursor: default;
       }
 
@@ -182,7 +184,7 @@
 
       .btn-primary {
         padding: 0.45rem 1.1rem;
-        background: #3b5bdb;
+        background: #b72020;
         color: #fff;
         border: none;
         border-radius: 7px;
@@ -192,7 +194,7 @@
         transition: background 0.15s, opacity 0.15s;
       }
 
-      .btn-primary:hover:not(:disabled) { background: #2f4abf; }
+      .btn-primary:hover:not(:disabled) { background: #ec4f76; }
       .btn-primary:disabled { opacity: 0.6; cursor: default; }
     </style>
   </head>
@@ -231,24 +233,24 @@
     <script>
       "use strict";
 
-      // ── state ─────────────────────────────────────────────────────────────
+      // state  variables
       let currentPage = 1;
-      let totalPages  = 1;
-      let isLoading   = false;
+      let totalPages = 1;
+      let isLoading = false;
 
-      // ── DOM refs ──────────────────────────────────────────────────────────
-      const gridEl       = document.getElementById("grid");
-      const statsEl      = document.getElementById("stats");
-      const pageLabel    = document.getElementById("pageLabel");
-      const errorBanner  = document.getElementById("errorBanner");
-      const overlay      = document.getElementById("overlay");
+      // DOM refs
+      const gridEl = document.getElementById("grid");
+      const statsEl = document.getElementById("stats");
+      const pageLabel = document.getElementById("pageLabel");
+      const errorBanner = document.getElementById("errorBanner");
+      const overlay = document.getElementById("overlay");
       const reshuffleBtn = document.getElementById("reshuffleBtn");
-      const firstBtn     = document.getElementById("firstBtn");
-      const prevBtn      = document.getElementById("prevBtn");
-      const nextBtn      = document.getElementById("nextBtn");
-      const lastBtn      = document.getElementById("lastBtn");
+      const firstBtn = document.getElementById("firstBtn");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const lastBtn = document.getElementById("lastBtn");
 
-      // ── API calls ─────────────────────────────────────────────────────────
+      // API calls
 
       async function postShuffle() {
         const res = await fetch("/api/shuffle", { method: "POST" });
@@ -262,7 +264,7 @@
         return res.json();
       }
 
-      // ── rendering ─────────────────────────────────────────────────────────
+      // Rendering
 
       function setLoading(loading) {
         isLoading = loading;
@@ -318,7 +320,7 @@
         lastBtn.disabled  = page === pages;
       }
 
-      // ── core flow ─────────────────────────────────────────────────────────
+      // Main Flow
 
       async function shuffle() {
         setLoading(true);
@@ -348,7 +350,7 @@
         }
       }
 
-      // ── event listeners ───────────────────────────────────────────────────
+      // Event Listeners
 
       reshuffleBtn.addEventListener("click", shuffle);
 
@@ -357,7 +359,7 @@
       nextBtn.addEventListener("click",  () => loadPage(currentPage + 1));
       lastBtn.addEventListener("click",  () => loadPage(totalPages));
 
-      // ── init ──────────────────────────────────────────────────────────────
+      // Initialize app
       shuffle();
     </script>
   </body>
