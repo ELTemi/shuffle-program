@@ -7,18 +7,18 @@ const url  = require("url");
 
 const { runShuffle } = require("./shuffle");
 
-const PORT       = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, "public");
 
 const DEFAULT_PAGE_SIZE = 100;
-const MAX_PAGE_SIZE     = 1000;
+const MAX_PAGE_SIZE = 1000;
 
 const MIME_TYPES = {
   ".html": "text/html",
-  ".css":  "text/css",
-  ".js":   "application/javascript",
+  ".css": "text/css",
+  ".js": "application/javascript",
   ".json": "application/json",
-  ".ico":  "image/x-icon",
+  ".ico": "image/x-icon",
 };
 
 // Holds the most recently shuffled result so paginated GET requests can serve
@@ -30,7 +30,7 @@ let shuffleState = null;
 function sendJSON(res, statusCode, payload) {
   const body = JSON.stringify(payload);
   res.writeHead(statusCode, {
-    "Content-Type":   "application/json",
+    "Content-Type": "application/json",
     "Content-Length": Buffer.byteLength(body),
   });
   res.end(body);
